@@ -1,0 +1,17 @@
+keybind = ctrl+z=new_split:auto
+keybind = alt+z=goto_split:next
+#keybind = alt+up=goto_split:up
+#keybind = alt+down=goto_split:down
+
+
+
+#background = 000000
+#foreground = 00FF41
+font-size = 21
+theme = Builtin Pastel Dark
+cursor-style = block
+adjust-cell-height = 50%
+font-family=PP Supply Mono
+window-width=100
+window-height=23
+confirm-close-surface=false
