@@ -49,9 +49,13 @@ ln -sf "$DOTFILES_DIR/.tmux.conf" "$HOME/.tmux.conf"
 # Create .local/bin if it doesn't exist
 mkdir -p "$HOME/.local/bin"
 # Link the env file
-ln -sf "$DOTFILES_DIR/env" "$HOME/.local/bin/env"
-chmod +x "$HOME/.local/bin/env"
-
+if [ -f "$DOTFILES_DIR/.local/bin/env" ]; then
+    mkdir -p "$HOME/.local/bin"
+    ln -sf "$DOTFILES_DIR/.local/bin/env" "$HOME/.local/bin/env"
+    chmod +x "$DOTFILES_DIR/.local/bin/env"  # Make the source file executable, not the symlink
+else
+    echo "Warning: env file not found in dotfiles"
+fi
 # Set up ghostty config if needed
 if [ -d "$DOTFILES_DIR/ghostty" ]; then
     mkdir -p "$HOME/.config"
