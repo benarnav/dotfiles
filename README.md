@@ -1,2 +1,2 @@
 # dotfiles
-My doesfiles to quickly setup remote machines
+My dotfiles to quickly setup remote machines
