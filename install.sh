@@ -24,6 +24,16 @@ if [ ! -d "$HOME/.oh-my-zsh" ]; then
 else
     echo "Oh My Zsh already installed, skipping..."
 fi
+echo "Installing zsh plugins..."
+# zsh-autosuggestions
+git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions 2>/dev/null || echo "zsh-autosuggestions already installed"
+
+# zsh-syntax-highlighting
+git clone https://github.com/zsh-users/zsh-syntax-highlighting ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting 2>/dev/null || echo "zsh-syntax-highlighting already installed"
+
+# zsh-history-substring-search
+git clone https://github.com/zsh-users/zsh-history-substring-search ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-history-substring-search 2>/dev/null || echo "zsh-history-substring-search already installed"
+
 # Install bat and create alias if needed
 echo "Installing bat..."
 if ! command -v bat &> /dev/null; then
@@ -70,3 +80,13 @@ if [ "$SHELL" != "$(which zsh)" ]; then
 fi
 
 echo "Dotfiles installation complete!"
+# Set zsh as default shell
+if [ "$SHELL" != "$(which zsh)" ]; then
+    echo "Setting zsh as default shell..."
+    sudo chsh -s $(which zsh) $USER
+    echo "Shell changed to zsh. You may need to log out and back in for this to take effect."
+fi
+
+# Execute zsh immediately after installation
+echo "Starting zsh..."
+exec zsh -l
