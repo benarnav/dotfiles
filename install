@@ -8,10 +8,24 @@ DOTFILES_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 echo "Installing dotfiles from $DOTFILES_DIR"
 
+# Verbose symlink function
+symlink() {
+    printf '%55s -> %s\n' "${1/#$HOME/\~}" "${2/#$HOME/\~}"
+    ln -nsf "$@"
+}
+
 # Install essential packages
 echo "Installing essential packages..."
 sudo apt-get update -y
 sudo apt-get install -y vim tmux zsh curl wget 
+
+# Initialize git submodules if they exist
+if [ -f "$DOTFILES_DIR/.gitmodules" ]; then
+    echo "Initializing git submodules..."
+    cd "$DOTFILES_DIR"
+    git submodule init
+    git submodule update
+fi
 
 # Install UV package manager
 echo "Installing uv..."
@@ -24,6 +38,7 @@ if [ ! -d "$HOME/.oh-my-zsh" ]; then
 else
     echo "Oh My Zsh already installed, skipping..."
 fi
+
 echo "Installing zsh plugins..."
 # zsh-autosuggestions
 git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions 2>/dev/null || echo "zsh-autosuggestions already installed"
@@ -48,38 +63,50 @@ if ! command -v bat &> /dev/null; then
 else
     echo "bat already installed, skipping..."
 fi
-# Create symbolic links
+
+# Define dotfiles to link
+dotfiles=(
+    ".bashrc"
+    ".zshrc"
+    ".vimrc"
+    ".nanorc"
+    ".tmux.conf"
+)
+
+# Create symbolic links for each dotfile
 echo "Creating symbolic links..."
-ln -sf "$DOTFILES_DIR/.bashrc" "$HOME/.bashrc"
-ln -sf "$DOTFILES_DIR/.zshrc" "$HOME/.zshrc"
-ln -sf "$DOTFILES_DIR/.vimrc" "$HOME/.vimrc"
-ln -sf "$DOTFILES_DIR/.nanorc" "$HOME/.nanorc"
-ln -sf "$DOTFILES_DIR/.tmux.conf" "$HOME/.tmux.conf"
+for f in "${dotfiles[@]}"; do
+    # Remove existing directory (if it's a directory and not a symlink)
+    if [[ -d "$HOME/$f" && ! -L "$HOME/$f" ]]; then
+        rm -r "$HOME/$f"
+    fi
+    symlink "$DOTFILES_DIR/${f}" "$HOME/$f"
+done
 
 # Create .local/bin if it doesn't exist
 mkdir -p "$HOME/.local/bin"
+
 # Link the env file
 if [ -f "$DOTFILES_DIR/.local/bin/env" ]; then
     mkdir -p "$HOME/.local/bin"
-    ln -sf "$DOTFILES_DIR/.local/bin/env" "$HOME/.local/bin/env"
+    symlink "$DOTFILES_DIR/.local/bin/env" "$HOME/.local/bin/env"
     chmod +x "$DOTFILES_DIR/.local/bin/env"  # Make the source file executable, not the symlink
 else
     echo "Warning: env file not found in dotfiles"
 fi
+
 # Set up ghostty config if needed
 if [ -d "$DOTFILES_DIR/ghostty" ]; then
     mkdir -p "$HOME/.config"
-    ln -sf "$DOTFILES_DIR/ghostty" "$HOME/.config/ghostty"
+    symlink "$DOTFILES_DIR/ghostty" "$HOME/.config/ghostty"
 fi
 
-# Set zsh as default shell
-if [ "$SHELL" != "$(which zsh)" ]; then
-    echo "Setting zsh as default shell..."
-    chsh -s $(which zsh)
-    echo "Shell changed to zsh. You may need to log out and back in for this to take effect."
+# For neovim config compatibility
+if [ -d "$DOTFILES_DIR/.vim" ]; then
+    mkdir -p "$HOME/.config"
+    symlink "$HOME/.vim" "$HOME/.config/nvim"
 fi
 
-echo "Dotfiles installation complete!"
 # Set zsh as default shell
 if [ "$SHELL" != "$(which zsh)" ]; then
     echo "Setting zsh as default shell..."
@@ -87,6 +114,15 @@ if [ "$SHELL" != "$(which zsh)" ]; then
     echo "Shell changed to zsh. You may need to log out and back in for this to take effect."
 fi
 
-# Execute zsh immediately after installation
+# Install any vim plugins if there's a plugin manager
+if [ -f "$HOME/.vimrc" ] && [ -t 1 ]; then
+    echo "Installing vim plugins..."
+    vim '+PlugInstall --sync' +qa || echo "Vim plugin installation skipped."
+else
+    echo "May need to run: vim +'PlugInstall --sync' +qa"
+fi
+
+echo "Dotfiles installation complete!"
+# Start zsh
 echo "Starting zsh..."
 exec zsh -l
