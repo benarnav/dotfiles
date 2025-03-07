@@ -123,7 +123,6 @@ else
 fi
 
 echo "Dotfiles installation complete!"
-# Start zsh
 echo "Starting zsh..."
 exec zsh -l
 
@@ -137,6 +136,9 @@ eval "$(ssh-agent -s)"
 # Add key to SSH agent
 ssh-add "$HOME/.ssh/id_ed25519"
 
-# Display the public key
 echo "Here is your public SSH key (add this to GitHub):"
-bat "$HOME/.ssh/id_ed25519.pub"
+if command -v bat &> /dev/null; then
+    bat "$HOME/.ssh/id_ed25519.pub"
+else
+    cat "$HOME/.ssh/id_ed25519.pub"
+fi
