@@ -122,10 +122,6 @@ else
     echo "May need to run: vim +'PlugInstall --sync' +qa"
 fi
 
-echo "Dotfiles installation complete!"
-echo "Starting zsh..."
-exec zsh -l
-
 # Generate new SSH key
 echo "Generating new SSH key..."
 ssh-keygen -t ed25519 -C "github@benjaminarnav.com" -f "$HOME/.ssh/id_ed25519" -N ""
@@ -142,3 +138,7 @@ if command -v bat &> /dev/null; then
 else
     cat "$HOME/.ssh/id_ed25519.pub"
 fi
+
+echo "Starting zsh..."
+exec zsh -l
+
